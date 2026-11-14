@@ -1,0 +1,26 @@
+{
+ "version": "0.3.18",
+ "date": "2026-11-15",
+ "notes": "Board the Lancer and Prospector through their docking ports (the Lancer gets the Wren's double sliding door). Crew and pirates move more naturally: arms and legs bend only at the elbow and knee, and pirates kneel on one knee behind cover. Smaller download: unused old files removed.",
+ "launcher": {
+  "path": "Nightlight.exe",
+  "size": 109819080,
+  "sha256": "6a8b52eeb871e8f7b346583e9b8f8493751ea9e66e9f6a264fcea79b705d99ad",
+  "url": "https://github.com/RobSpada/Nightlight-Official-Releases/releases/download/v0.3.18/Nightlight.exe",
+  "version": 6
+ },
+ "files": [
+  {
+   "path": "game/game.pck",
+   "size": 589744160,
+   "sha256": "6a0d48eb005592d9f22941c4fa4b61bdf6fc36d4e2c31b17052f7eb50c5f2353",
+   "url": "https://github.com/RobSpada/Nightlight-Official-Releases/releases/download/v0.3.18/game.pck"
+  },
+  {
+   "path": "game/game.exe",
+   "size": 109268480,
+   "sha256": "57d1ab51570253b6aaa585b8e6834350bfdccba3df380f641655ec145079d23e",
+   "url": "https://github.com/RobSpada/Nightlight-Official-Releases/releases/download/v0.3.18/game.exe"
+  }
+ ]
+}

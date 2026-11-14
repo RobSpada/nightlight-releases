@@ -1,0 +1,41 @@
+# Publishes a Nightlight release when a signed build is pushed to the `upload` branch.
+# The build arrives as Nightlight.exe (the launcher), game.exe (the game runtime, from 0.3.17) and game.pck, each split
+# into <100 MB parts (<name>.part*) when bigger, plus manifest.json and
+# manifest.json.sig. Every file is checked against the manifest's SHA-256 before the release is made. The launcher
+# itself only accepts a manifest signed with the owner's private release key, which never leaves the owner's side.
+name: Publish release
+on:
+  push:
+    branches: [upload]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: upload
+      - name: Reassemble and verify
+        run: |
+          for f in Nightlight.exe game.exe game.pck; do
+            if ls $f.part* >/dev/null 2>&1; then cat $f.part* > $f; rm $f.part*; fi
+          done
+          python3 - <<'PY'
+          import json, hashlib
+          m = json.load(open("manifest.json"))
+          for f in [m["launcher"]] + m["files"]:
+              n = f["url"].rsplit("/", 1)[1]
+              h = hashlib.sha256(open(n, "rb").read()).hexdigest()
+              assert h == f["sha256"], f"{n}: sha256 mismatch"
+          open("notes.txt", "w").write(m["notes"])
+          open("version.txt", "w").write(m["version"])
+          PY
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(cat version.txt)
+          EXTRA=$(ls game.exe 2>/dev/null || true)
+          gh release create "v$VER" Nightlight.exe game.pck $EXTRA manifest.json manifest.json.sig \
+            -R "${{ github.repository }}" -t "Nightlight $VER" -F notes.txt --latest
