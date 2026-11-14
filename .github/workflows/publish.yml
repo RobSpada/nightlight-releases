@@ -1,5 +1,6 @@
 # Publishes a Nightlight release when a signed build is pushed to the `upload` branch.
-# The build arrives as Nightlight.exe, game.pck (split into <100 MB parts: game.pck.part*), manifest.json and
+# The build arrives as Nightlight.exe (split into Nightlight.exe.part* when over 100 MB: the Godot 4.7 runtime is
+# 110 MB), game.pck (split into <100 MB parts: game.pck.part*), manifest.json and
 # manifest.json.sig. Every file is checked against the manifest's SHA-256 before the release is made. The launcher
 # itself only accepts a manifest signed with the owner's private release key, which never leaves the owner's side.
 name: Publish release
@@ -19,6 +20,7 @@ jobs:
         run: |
           cat game.pck.part* > game.pck
           rm game.pck.part*
+          if ls Nightlight.exe.part* >/dev/null 2>&1; then cat Nightlight.exe.part* > Nightlight.exe; rm Nightlight.exe.part*; fi
           python3 - <<'PY'
           import json, hashlib
           m = json.load(open("manifest.json"))
