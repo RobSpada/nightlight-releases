@@ -1,6 +1,6 @@
 # Publishes a Nightlight release when a signed build is pushed to the `upload` branch.
-# The build arrives as Nightlight.exe (split into Nightlight.exe.part* when over 100 MB: the Godot 4.7 runtime is
-# 110 MB), game.pck (split into <100 MB parts: game.pck.part*), manifest.json and
+# The build arrives as Nightlight.exe (the launcher), game.exe (the game runtime, from 0.3.17) and game.pck, each split
+# into <100 MB parts (<name>.part*) when bigger, plus manifest.json and
 # manifest.json.sig. Every file is checked against the manifest's SHA-256 before the release is made. The launcher
 # itself only accepts a manifest signed with the owner's private release key, which never leaves the owner's side.
 name: Publish release
@@ -18,9 +18,9 @@ jobs:
           ref: upload
       - name: Reassemble and verify
         run: |
-          cat game.pck.part* > game.pck
-          rm game.pck.part*
-          if ls Nightlight.exe.part* >/dev/null 2>&1; then cat Nightlight.exe.part* > Nightlight.exe; rm Nightlight.exe.part*; fi
+          for f in Nightlight.exe game.exe game.pck; do
+            if ls $f.part* >/dev/null 2>&1; then cat $f.part* > $f; rm $f.part*; fi
+          done
           python3 - <<'PY'
           import json, hashlib
           m = json.load(open("manifest.json"))
@@ -36,5 +36,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER=$(cat version.txt)
-          gh release create "v$VER" Nightlight.exe game.pck manifest.json manifest.json.sig \
+          EXTRA=$(ls game.exe 2>/dev/null || true)
+          gh release create "v$VER" Nightlight.exe game.pck $EXTRA manifest.json manifest.json.sig \
             -R "${{ github.repository }}" -t "Nightlight $VER" -F notes.txt --latest
